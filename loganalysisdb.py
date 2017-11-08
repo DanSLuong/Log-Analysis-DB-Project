@@ -3,7 +3,7 @@ import psycopg2, bleach
 DBNAME = "newsdata"
 
 def get_data():
-    db = psycopg2.connect(db=DBNAME)
+    db = psycopg2.connect(db=news)
     c = db.cursor()
     c.execute("select * from authors")
     ## What are the most popular three articles of all time?
