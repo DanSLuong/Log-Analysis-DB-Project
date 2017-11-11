@@ -1,5 +1,6 @@
+# !/usr/bin/env python
+
 import psycopg2
-from datetime import datetime
 
 
 def connect(query):
@@ -11,9 +12,11 @@ def connect(query):
         results = c.fetchall()
         db.close()
         return results
-    except BaseException:
-        # If there is an exception
-        print("Error!!!")
+    except BaseException as e:
+        # If there is an prints error string from psycopg2 library if
+        # there is an exception
+        print(e)
+        exit(1)
 
 
 def popular_articles():
