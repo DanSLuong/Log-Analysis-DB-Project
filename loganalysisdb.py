@@ -3,7 +3,7 @@
 import psycopg2
 
 
-def connect(query):
+def get_query_results(query):
     # Attempt to connect to database
     try:
         db = psycopg2.connect(database="news")
@@ -24,7 +24,7 @@ def popular_articles():
     # What are the most popular three articles of all time?
     print("The 3 most popular articles are: ")
     print("{:^35s}".format("Title") + "|" + "{:^10s}".format("Views"))
-    results = (connect("""SELECT a.title,
+    results = (get_query_results("""SELECT a.title,
                                 COUNT(b.time) AS views
                                 FROM articles a, log b
                                 WHERE path!='/'
@@ -43,7 +43,7 @@ def popular_authors():
     print("{:^25s}".format("Author Name") +
           "|" + "{:^10s}".format("Total Views"))
     # Query that joins the
-    results = (connect("""SELECT c.name,
+    results = (get_query_results("""SELECT c.name,
                             COUNT(b.time) AS views
                             FROM articles a, log b, authors c
                             WHERE path!='/'
@@ -62,7 +62,7 @@ def error_day():
     print("{:^12s}".format("Date") + "|" + "{:^15s}".format("% Error"))
     # Query that takes the total number of attempted views and number of errors
     # per day and caculuates the percentage of errors for that day
-    results = (connect("""SELECT a.date,
+    results = (get_query_results("""SELECT a.date,
                                 (CAST(b.COUNT AS FLOAT)/CAST(a.COUNT
                                 AS FLOAT))*100 AS percent
                                 FROM (SELECT time::timestamp::date AS date,
