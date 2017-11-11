@@ -38,11 +38,11 @@ def popular_authors():
 def error_day():
     ## On which days did more than 1% of requests lead to errors?
     print ("The days that had more than 1'%' of request be errors were: ")
-    print ("{:^30s}".format("Date") + "|" + "{:^15s}".format("% Error"))
+    print ("{:^12s}".format("Date") + "|" + "{:^15s}".format("% Error"))
     ## Query that takes the total number of attempted views and number of errors per day and caculuates the percentage of errors for that day 
     results = (connect("SELECT a.date, (CAST(b.COUNT AS FLOAT)/CAST(a.COUNT AS FLOAT))*100 AS percent FROM (SELECT time::timestamp::date AS date, COUNT(*) FROM log GROUP BY date) a, (SELECT time::timestamp::date AS date, COUNT(*) FROM log WHERE status = '404 NOT FOUND' GROUP BY date) b WHERE a.date = b.date AND ((CAST(b.COUNT as FLOAT)/CAST(a.COUNT as FLOAT))*100) > 1.0"))
     for i in results:
-        print("{:^30s}".format(str(i[0])) + '|' + "{:^15s}".format(str(i[1])))
+        print("{:^12s}".format(str(i[0])) + '|' + "{:^15s}".format(str(i[1])))
     print("")
     
 if __name__ == "__main__":
