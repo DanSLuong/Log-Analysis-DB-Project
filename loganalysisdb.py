@@ -15,7 +15,9 @@ def get_data():
     ## select a.name, count(a.name) as views from authorarticleinfo a, log b where b.path=('/article/'||a.slug) and b.path!='/' group by a.name order by views desc;
 
     ## On which days did more than 1% of requests lead to errors?
-    
+    ## select a.day, a.count as total, b.count as errors, (cast(b.count as float)/cast(a.count as float))*100 as percent from (select date_trunc('day', time) as day, count(*) from log group by day) a, (select date_trunc('day', time) as day, count(*) from log where status = '404 NOT FOUND' group by day) b where a.day=b.day and ((cast(b.count as float)/cast(a.count as float))*100)>1.0 order by percent desc;
+
+
     posts = c.fetchall()
     db.close()
     return posts
