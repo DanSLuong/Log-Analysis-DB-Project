@@ -13,33 +13,38 @@ def connect(query):
         return results
     except BaseException:
         ## If there is an exception
-        print "Error!!!"
-
-
-def display_results(results):
-    
-
+        print ("Error!!!")
 
 def popular_articles():
 
-    # What are the most popular three articles of all time?
-    print "The 3 most popular articles are: "
-    display_results(connect(
-        "SELECT a.title, COUNT(b.time) AS views FROM articles a, log b WHERE path!='/' AND b.path LIKE '/article/'||a.slug||'%%' GROUP BY title ORDER BY VIEWS DESC LIMIT 3"))
-
-
+    ## What are the most popular three articles of all time?
+    print ("The 3 most popular articles are: ")
+    print ("{:^35s}".format("Title") + "|" + "{:^10s}".format("Views"))
+    results = (connect("SELECT a.title, COUNT(b.time) AS views FROM articles a, log b WHERE path!='/' AND b.path LIKE '/article/'||a.slug||'%%' GROUP BY title ORDER BY VIEWS DESC LIMIT 3"))
+    for i in results:
+        print("{:^35s}".format(str(i[0])) + '|' + "{:^10s}".format(str(i[1])))
+    print("")
+    
 def popular_authors():
-    # Who are the most popular article authors of all time?
-    print "The most popular authors are: "
-    display_results(connect("SELECT c.name, COUNT(b.time) AS views FROM articles a, log b, authors c WHERE path!='/' AND b.path LIKE '/article/'||a.slug||'%%' AND a.author = c.id GROUP BY c.name ORDER BY views DESC"))
-
-
+    ## Who are the most popular article authors of all time?
+    print ("The most popular authors are: ")
+    print ("{:^25s}".format("Author Name") + "|" + "{:^10s}".format("Total Views"))
+    ## Query that joins the 
+    results = (connect("SELECT c.name, COUNT(b.time) AS views FROM articles a, log b, authors c WHERE path!='/' AND b.path LIKE '/article/'||a.slug||'%%' AND a.author = c.id GROUP BY c.name ORDER BY views DESC"))
+    for i in results:
+        print("{:^25s}".format(str(i[0])) + '|' + "{:^10s}".format(str(i[1])))
+    print("")
+    
 def error_day():
-    # On which days did more than 1% of requests lead to errors?
-    print "The days that had more than 1'%' of request be errors were: "
-    display_results(connect("SELECT a.day, a.COUNT AS total, b.COUNT AS errors, (CAST(b.COUNT AS FLOAT)/CAST(a.COUNT AS FLOAT))*100 AS percent FROM (SELECT date_trunc('day', time) AS day, COUNT(*) FROM log GROUP BY day) a, (SELECT date_trunc('day', time) AS day, COUNT(*) FROM log WHERE status = '404 NOT FOUND' GROUP BY day) b WHERE a.day = b.day AND ((CAST(b.COUNT as FLOAT)/CAST(a.COUNT as FLOAT))*100) > 1.0"))
-
-
+    ## On which days did more than 1% of requests lead to errors?
+    print ("The days that had more than 1'%' of request be errors were: ")
+    print ("{:^30s}".format("Date") + "|" + "{:^15s}".format("% Error"))
+    ## Query that takes the total number of attempted views and number of errors per day and caculuates the percentage of errors for that day 
+    results = (connect("SELECT a.date, (CAST(b.COUNT AS FLOAT)/CAST(a.COUNT AS FLOAT))*100 AS percent FROM (SELECT time::timestamp::date AS date, COUNT(*) FROM log GROUP BY date) a, (SELECT time::timestamp::date AS date, COUNT(*) FROM log WHERE status = '404 NOT FOUND' GROUP BY date) b WHERE a.date = b.date AND ((CAST(b.COUNT as FLOAT)/CAST(a.COUNT as FLOAT))*100) > 1.0"))
+    for i in results:
+        print("{:^30s}".format(str(i[0])) + '|' + "{:^15s}".format(str(i[1])))
+    print("")
+    
 if __name__ == "__main__":
     popular_articles()
     popular_authors()
