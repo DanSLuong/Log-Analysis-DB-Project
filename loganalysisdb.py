@@ -1,23 +1,46 @@
-import psycopg2, bleach
+import psycopg2
+from datetime import datetime
 
-DBNAME = "news"
 
-def get_data():
-    db = psycopg2.connect(db=DBNAME)
-    c = db.cursor()
-    c.execute("select * from authors")
-    ## What are the most popular three articles of all time?
-    ## create view numofviews as select path, count(time) as views from log where path!='/' group by path order by views desc;
-    ## select articles.title, numofviews.views from articles, numofviews where numofviews.path = ('/article/'||articles.slug) group by articles.title, numofviews.views order by numofviews.views desc limit 3;
+def connect(query):
+    ## Attempt to connect to database
+    try:
+        db = psycopg2.connect(database="news")
+        c = db.cursor()
+        c.execute(query)
+        results = c.fetchall()
+        db.close()
+        return results
+    except BaseException:
+        ## If there is an exception
+        print "Error!!!"
+
+
+def display_results(results):
     
-    ## Who are the most popular article authors of all time? 
-    ## create view authorarticleinfo as select authors.name, articles.title, articles.slug from authors, articles where authors.id=articles.author group by articles.title, articles.slug, authors.name order by authors.name;
-    ## select a.name, count(a.name) as views from authorarticleinfo a, log b where b.path=('/article/'||a.slug) and b.path!='/' group by a.name order by views desc;
-
-    ## On which days did more than 1% of requests lead to errors?
-    ## select a.day, a.count as total, b.count as errors, (cast(b.count as float)/cast(a.count as float))*100 as percent from (select date_trunc('day', time) as day, count(*) from log group by day) a, (select date_trunc('day', time) as day, count(*) from log where status = '404 NOT FOUND' group by day) b where a.day=b.day and ((cast(b.count as float)/cast(a.count as float))*100)>1.0 order by percent desc;
 
 
-    posts = c.fetchall()
-    db.close()
-    return posts
+def popular_articles():
+
+    # What are the most popular three articles of all time?
+    print "The 3 most popular articles are: "
+    display_results(connect(
+        "SELECT a.title, COUNT(b.time) AS views FROM articles a, log b WHERE path!='/' AND b.path LIKE '/article/'||a.slug||'%%' GROUP BY title ORDER BY VIEWS DESC LIMIT 3"))
+
+
+def popular_authors():
+    # Who are the most popular article authors of all time?
+    print "The most popular authors are: "
+    display_results(connect("SELECT c.name, COUNT(b.time) AS views FROM articles a, log b, authors c WHERE path!='/' AND b.path LIKE '/article/'||a.slug||'%%' AND a.author = c.id GROUP BY c.name ORDER BY views DESC"))
+
+
+def error_day():
+    # On which days did more than 1% of requests lead to errors?
+    print "The days that had more than 1'%' of request be errors were: "
+    display_results(connect("SELECT a.day, a.COUNT AS total, b.COUNT AS errors, (CAST(b.COUNT AS FLOAT)/CAST(a.COUNT AS FLOAT))*100 AS percent FROM (SELECT date_trunc('day', time) AS day, COUNT(*) FROM log GROUP BY day) a, (SELECT date_trunc('day', time) AS day, COUNT(*) FROM log WHERE status = '404 NOT FOUND' GROUP BY day) b WHERE a.day = b.day AND ((CAST(b.COUNT as FLOAT)/CAST(a.COUNT as FLOAT))*100) > 1.0"))
+
+
+if __name__ == "__main__":
+    popular_articles()
+    popular_authors()
+    error_day()
