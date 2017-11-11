@@ -1,6 +1,6 @@
-import psycopg2
-from datetime import datetime
+#!/usr/bin/env python
 
+import psycopg2
 
 def connect(query):
     ## Attempt to connect to database
@@ -11,9 +11,10 @@ def connect(query):
         results = c.fetchall()
         db.close()
         return results
-    except BaseException:
-        ## If there is an exception
-        print ("Error!!!")
+    except BaseException as e:
+        ## If there is an prints error string from psycopg2 library if there is an exception
+        print (e)
+        exit(1)
 
 def popular_articles():
 
@@ -49,3 +50,15 @@ if __name__ == "__main__":
     popular_articles()
     popular_authors()
     error_day()
+
+
+    SELECT c.name, COUNT(b.time) AS views 
+    FROM 
+    articles a, log b, authors c 
+    WHERE 
+    path!='/' 
+    AND 
+    b.path LIKE '/article/'||a.slug||'%%' 
+    AND a.author = c.id 
+    GROUP BY c.name 
+    ORDER BY views DESC
